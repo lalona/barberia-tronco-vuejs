@@ -7,3 +7,5 @@ services:
     deploy_on_push: true
     repo: lalona/barberia-tronco-vuejs
   name: barberia-tronco-vuejs
+  routes:
+  - path: /
