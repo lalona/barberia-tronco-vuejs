@@ -52,24 +52,14 @@ export default {
     };
   },
   methods: {
-    checkForm: function(e) {
-      if (this.name && this.age) {
-        return true;
-      }
+    checkForm: function(e) {      
 
-      this.errors = [];
-
-      if (!this.name) {
-        this.errors.push('El nombre es obligatorio.');
-      }
-      if (!this.age) {
-        this.errors.push('La edad es obligatoria.');
-      }
+      this.errors = [];      
 
       e.preventDefault();
 
       axios
-      .post('http://164.90.149.153/api/appointments/dummyAppointment', this.appointment)
+      .post('https://www.api.barbermovil-api-phoenix.xyz/api/appointments/dummyAppointment', this.appointment)
       .then(response => (this.info = response))
     }
   }
