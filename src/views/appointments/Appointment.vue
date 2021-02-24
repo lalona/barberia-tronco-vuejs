@@ -1,68 +1,82 @@
 <template>
   <div>
-    <form id="app" @submit="checkForm" action="https://vuejs.org/" method="post">
+    <br>
+    <v-card class="mx-auto" max-width="1000">
+      <v-form v-model="valid" @submit.prevent="submit">
+        <p v-if="errors.length">
+          <v-alert dense outlined type="error" v-for="error in errors" :key="error">
+            {{ error }}
+          </v-alert>
+        </p>
+        <v-container>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-text-field v-model="firstname" :counter="30" label="First name" required outlined></v-text-field>
+            </v-col>
 
-      <p v-if="errors.length">
-        <b>Please review errors:</b>
-        <ul>
-          <li v-for="error in errors" :key="error">{{ error }}</li>
-        </ul>
-      </p>
+            <v-col cols="12" md="4">
+              <v-text-field v-model="lastname" :counter="30" label="Last name" required outlined></v-text-field>
+            </v-col>
 
-      <p>
-        <label for="name">Fullname</label>
-        <input id="name" v-model="appointment.fullname" type="text" name="fullname">
-      </p>
-
-      <p>
-        <label for="age">Phonenumber</label>
-        <input id="age" v-model="appointment.phonenumber" type="text" name="phonenumber">
-      </p>
-
-      <p>
-        <label for="age">Address</label>
-        <input id="age" v-model="appointment.address" type="text" name="address">
-      </p>      
-
-      <b>{{ info }}</b>
-
-      <p>
-        <input type="submit" value="Enviar">
-      </p>
-
-    </form>
+            <v-col cols="12" md="4">
+              <v-text-field v-model="phonenumber" :rules="phoneRules" label="Phone number (only numbers)" required outlined></v-text-field>
+            </v-col>
+          </v-row>
+          <v-btn class="mr-4" type="submit" :disabled="!valid">
+            Next
+          </v-btn>
+        </v-container>
+      </v-form>
+    </v-card>
   </div>
 </template>
 <script>
 
-import Appointment from '../../models/appointments/appointment.model.js'
+//import Appointment from '../../models/appointments/appointment.model.js'
 import axios from "axios";
+//import Places from '../../components/Inputs/Places.vue';
+import api from '../../config/api.config.js'
 
 export default {
   name: 'Appointment',
   data: function() {
-    let appointment = new Appointment("", "", "");
     return {
+      valid: false,
       errors: [],
-      name: null,
-      age: null,
-      movie: null,
-      appointment: appointment,
-      info: ""
+      firstname: "",
+      lastname: "",
+      phonenumber: "",
+      phoneRules: [
+        v => {
+          var phoneno = /^\d{10}$/;
+          return (v.match(phoneno)) || 'Phone number is not valid';
+        }
+      ],
     };
   },
   methods: {
-    checkForm: function(e) {      
+    submit: function() {
 
-      this.errors = [];      
+      this.errors = [];
 
-      e.preventDefault();
 
       axios
-      .post('https://www.api.barbermovil-api-phoenix.xyz/api/appointments/dummyAppointment', this.appointment)
-      .then(response => (this.info = response))
-    }
-  }
+        .post(api.base + '/appointments/clients/register', {
+          name: this.firstname,
+          lastname: this.lastname,
+          phonenumber: this.phonenumber,
+          phonenumberCountry: "us"
+        })
+        .then(response => {
+          this.info = response;
+          this.$router.push({ name: 'AppointmentAddress', params: { idClient: response.id } })
+        })
+        .catch(e => this.errors = ["There was an error registering information.", e])
+    },
+  },
+  // components: {
+  //   Places,
+  // }
 }
 </script>
 
