@@ -15,6 +15,7 @@
                                 <v-list-item-content>
                                     <v-list-item-title>{{service.name}} - ${{service.price}} dlls.</v-list-item-title>
                                     <v-list-item-subtitle>{{service.description}}</v-list-item-subtitle>
+                                    <v-list-item-subtitle>Aprox. time - {{service.estimatedDurationMin}} min</v-list-item-subtitle>
                                 </v-list-item-content>
                             </template>
                         </v-list-item>
@@ -32,9 +33,13 @@
                     </div>
                 </v-list-item-group>
             </v-list>
-            <v-btn class="ma-2" outlined color="indigo" v-on:click="submit">
+
+            <v-btn class="ma-2" v-on:click="submit" :disabled="!valid">
                 Next
-            </v-btn>            
+            </v-btn>
+            <!-- <v-btn class="ma-2" outlined color="indigo" v-on:click="submit">
+                    Next
+                </v-btn>             -->
         </v-card>
     </div>
 </template>
@@ -54,7 +59,8 @@ export default {
         return {
             valid: false,
             errors: [],
-            services: []
+            services: [],
+            servicesSelected: {}
         };
     },
     mounted() {
@@ -74,10 +80,33 @@ export default {
             service.selected = !service.selected;
             service.selectedCount = service.selected ? 1 : 0;
             console.log(this.services);
+            if (service.selected) {
+                this.servicesSelected[service.id] = service;
+            }
+            else {
+                delete this.servicesSelected[service.id];
+            }
+            this.valid = Object.keys(this.servicesSelected).length > 0;
             return service;
         },
         submit: function() {
-            this.$router.push({ name: 'AppointmentAvailability', params: { clientAddressId: this.$route.params.clientAddressId } })
+            var estimatedDuration = 0;
+            var services = [];
+            console.log(this.servicesSelected);
+            for (var k = 0; k < Object.keys(this.servicesSelected).length; k++) {
+                var key = Object.keys(this.servicesSelected)[k];
+                var service = this.servicesSelected[key];                
+                estimatedDuration += service.estimatedDurationMin;
+                services.push(service);
+            }
+            this.$router.push({
+                name: 'AppointmentAvailability', params: {
+                    clientAddressId: this.$route.params.clientAddressId, services: {
+                        services: services,
+                        estimatedDuration: estimatedDuration
+                    }
+                }
+            })
         }
     }
     // components: {

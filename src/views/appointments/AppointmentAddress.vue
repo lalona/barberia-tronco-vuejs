@@ -88,6 +88,7 @@ export default {
             console.log(place.address_components.lenght);
             var postalCode = false;
             this.placeDetails["extra"] = {}
+            this.errors = [];
             for (var i = 0; i < place.address_components.length; i++) {
                 let component = place.address_components[i];
                 console.log(component);

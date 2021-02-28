@@ -37,6 +37,7 @@ const routes = [
   {
     path: '/appointmentAvailability/:clientAddressId',
     name: 'AppointmentAvailability',
+    props: true,
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -49,10 +50,20 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../views/appointments/AppointmentServices.vue')
+  },
+  {
+    path: '/appointmentConfirmation/:appointmentId',
+    name: 'AppointmentConfirmation',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/appointments/AppointmentConfirmation.vue')
   }
+  
+
 ]
 
-const router = new VueRouter({
+const router = new VueRouter({  
   routes
 })
 
