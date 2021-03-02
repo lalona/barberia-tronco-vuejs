@@ -37,9 +37,13 @@
             <v-btn class="ma-2" v-on:click="submit" :disabled="!valid">
                 Next
             </v-btn>
+
+            <v-btn class="ma-2" v-on:click="$emit('back')" :disabled="!valid">
+                Back
+            </v-btn>
             <!-- <v-btn class="ma-2" outlined color="indigo" v-on:click="submit">
-                    Next
-                </v-btn>             -->
+                            Next
+                        </v-btn>             -->
         </v-card>
     </div>
 </template>
@@ -95,17 +99,21 @@ export default {
             console.log(this.servicesSelected);
             for (var k = 0; k < Object.keys(this.servicesSelected).length; k++) {
                 var key = Object.keys(this.servicesSelected)[k];
-                var service = this.servicesSelected[key];                
+                var service = this.servicesSelected[key];
                 estimatedDuration += service.estimatedDurationMin;
                 services.push(service);
             }
-            this.$router.push({
-                name: 'AppointmentAvailability', params: {
-                    clientAddressId: this.$route.params.clientAddressId, services: {
-                        services: services,
-                        estimatedDuration: estimatedDuration
-                    }
-                }
+            // this.$router.push({
+            //     name: 'AppointmentAvailability', params: {
+            //         clientAddressId: this.$route.params.clientAddressId, services: {
+            //             services: services,
+            //             estimatedDuration: estimatedDuration
+            //         }
+            //     }
+            // })
+            this.$emit('next', {
+                services: services,
+                estimatedDuration: estimatedDuration
             })
         }
     }

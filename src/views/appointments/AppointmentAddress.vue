@@ -2,6 +2,19 @@
     <div>
         <br>
         <v-card class="mx-auto" max-width="700">
+            <v-list dense v-if="phonenumberConfirmed">                
+                <v-list-item-group v-model="selectedItem" color="primary">
+                    <v-list-item v-for="(address, i) in clientAddresses" :key="i" v-on:click="selectClientAddress(address.id)">
+                        <v-list-item-icon>
+                            <v-icon large>mdi-map-marker-outline</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                            <v-list-item-title v-text="address.formattedAddress"></v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list-item-group>
+            </v-list>
+
             <v-form @submit.prevent="submit">
                 <p v-if="errors.length">
                     <v-alert dense outlined type="error" v-for="error in errors" :key="error">
@@ -15,6 +28,10 @@
                     <v-btn class="mr-4" type="submit" :disabled="!valid">
                         Next
                     </v-btn>
+                    <v-btn class="mr-4" type="submit" v-on:click="$emit('back')">
+                        Back
+                    </v-btn>
+
                 </v-container>
                 <p>
                     <label for="name">{{placeDetails.formatted_address}}</label>
@@ -22,30 +39,30 @@
             </v-form>
         </v-card>
         <!-- <form id="app" @submit="checkForm" action="https://vuejs.org/" method="post">
-                          
+                                  
 
-                          <p>
-                            <label for="name">Fullname</label>
-                            <v-input id="name" v-model="appointment.fullname" type="text" name="fullname" />
-                          </p>
+                                  <p>
+                                    <label for="name">Fullname</label>
+                                    <v-input id="name" v-model="appointment.fullname" type="text" name="fullname" />
+                                  </p>
 
-                          <v-text-field label="Main input" :rules="rules" hide-details="auto"></v-text-field>
-                          <p>
-                            <label for="age">Phonenumber</label>
-                            <input id="age" v-model="appointment.phonenumber" type="text" name="phonenumber">
-                          </p>
+                                  <v-text-field label="Main input" :rules="rules" hide-details="auto"></v-text-field>
+                                  <p>
+                                    <label for="age">Phonenumber</label>
+                                    <input id="age" v-model="appointment.phonenumber" type="text" name="phonenumber">
+                                  </p>
 
-                          <p>
-                            <label for="age">Address</label>
-                            <input id="age" v-model="appointment.address" type="text" name="address">
-                          </p>          
-                          <b>{{ info }}</b>
+                                  <p>
+                                    <label for="age">Address</label>
+                                    <input id="age" v-model="appointment.address" type="text" name="address">
+                                  </p>          
+                                  <b>{{ info }}</b>
 
-                          <p>
-                            <input type="submit" value="Enviar">
-                          </p>
+                                  <p>
+                                    <input type="submit" value="Enviar">
+                                  </p>
 
-                        </form> -->
+                                </form> -->
     </div>
 </template>
 <script>
@@ -64,15 +81,24 @@ export default {
             errors: [],
             placeDetails: {
                 formattedAddress: ""
-            }
+            },
+            clientAddresses: []
             //idClient: this.$router.params.idClient
         };
+    },
+    props: {
+        idClient: {
+            required: true
+        },
+        phonenumberConfirmed: {
+            required: true
+        }
     },
     methods: {
         submit: function() {
             this.errors = [];
             const data = {
-                clientId: this.$route.params.idClient,
+                clientId: this.idClient,
                 placeDetails: this.placeDetails,
             };
             console.log(data);
@@ -80,9 +106,13 @@ export default {
                 .post(api.base + '/appointments/clients/registerAddress', data)
                 .then(response => {
                     console.log(response);
-                    this.$router.push({ name: 'AppointmentServices', params: { clientAddressId: response.id } });                    
+                    //this.$router.push({ name: 'AppointmentServices', params: { clientAddressId: response.id } });
+                    this.$emit('next', response.data.id);
                 })
                 .catch(e => this.errors = ["There was an error registering address.", e])
+        },
+        selectClientAddress: function(clientAddressId) {
+            this.$emit('next', clientAddressId);            
         },
         placeSelected: function(place, placeId) {
             console.log(place.address_components.lenght);
@@ -117,6 +147,20 @@ export default {
             this.placeDetails.latLng = [place.geometry.location.lat(), place.geometry.location.lng()];
             this.placeDetails.placeId = placeId;
             console.log(this.placeDetails);
+        }
+    },
+    watch: {
+        phonenumberConfirmed(newValue) {
+            // Si el telefono est'a confirmado buscar las direcciones del usuario
+            if (newValue) {
+                axios
+                    .get(api.base + '/appointments/clients/clientAddresses/' + this.idClient)
+                    .then(response => {
+                        console.log(response);
+                        this.clientAddresses = response.data.addresses;
+                    })
+                    .catch(e => this.errors = ["There was an error getting addresses.", e]);
+            }
         }
     },
     components: {

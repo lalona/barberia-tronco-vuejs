@@ -89,7 +89,9 @@ export default {
           this.showList = true;
           this.service.getPlacePredictions({
             input: this.location,
-            componentRestrictions: { country: ['us'] },
+            //componentRestrictions: { country: ['us'] },            
+            location: new window.google.maps.LatLng(33.6050991, -112.4052392), 
+            radius: 10000,
             types: ['address']
           }, this.displaySuggestions);
         } else {

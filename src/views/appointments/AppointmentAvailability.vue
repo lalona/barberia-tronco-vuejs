@@ -28,11 +28,14 @@
                         </v-chip-group>
                     </v-card-text>
                     <v-card-text v-if="Object.keys(hours).length == 0">
-                        No available appointments.
+                        No available dates.
                     </v-card-text>
-                    
+
                     <v-btn class="mr-4" type="submit" :disabled="!valid">
                         Confirm
+                    </v-btn>
+                    <v-btn class="mr-4" type="submit" v-on:click="$emit('back')">
+                        Back
                     </v-btn>
                 </v-container>
 
@@ -75,39 +78,35 @@ export default {
         };
     },
     props: {
+        clientAddressId: {
+            required: true
+        },
         services: {
             required: true
         }
     },
     mounted() {
-        console.log(this.services);
-        axios.post(api.base + "/appointments/barbers/byZone", { clientAddressId: this.$route.params.clientAddressId })
-            .then(response => {
-                let anyBarber = [{
-                    id: -1,
-                    name: "Any"
-                }];
-                this.barbers = anyBarber.concat(response.data);
-            })
-            .catch(e => this.errors.push(e))
+
     },
     methods: {
         submit: function() {
             this.errors = [];
             var hoursData = this.hours[Object.keys(this.hours)[this.hourSelected]];
+            const appointmentDetails = {
+                clientAddressId: this.clientAddressId,
+                date: this.selectedDate.format('YYYY-MM-DD'),
+                estimatedInit: hoursData.estimatedInit,
+                estimatedEnd: hoursData.estimatedEnd,
+                barbers: hoursData.barbers,
+                services: this.services.services
+            };
             console.log(hoursData);
             axios
-                .post(api.base + '/appointments/registerUnconfirmedAppointment', {
-                    clientAddressId: this.$route.params.clientAddressId,
-                    date: this.selectedDate.format('YYYY-MM-DD'),
-                    estimatedInit: hoursData.estimatedInit,
-                    estimatedEnd: hoursData.estimatedEnd,
-                    barbers: hoursData.barbers,
-                    services: this.services.services                 
-                })
+                .post(api.base + '/appointments/registerUnconfirmedAppointment', appointmentDetails)
                 .then(response => {
                     this.info = response;
-                    this.$router.push({ name: 'AppointmentConfirmation', params: { appointmentId: response.id } });
+                    //this.$router.push({ name: 'AppointmentConfirmation', params: { appointmentId: response.id } });
+                    this.$emit('next', response.data.id);
                 })
                 .catch(e => {
                     console.log(e);
@@ -148,30 +147,35 @@ export default {
                     const barbersAvailability = response.data;
                     var hours = {};
                     console.log(response);
-
-
-                    // TODO: tomar en cuenta que en el dia de hoy minimo se tiene que 
+                    const minHours = 3; // El minimo de horas a las que se puede agendar si la fecha es del dia de hoy
+                    const minTimeAppointment = 30; // El tiempo que se separa de cita a cita (s'olo para tener un orden)
+                    // Voy a recorrer las lista de barberos seleccionados (puede ser uno en especifico o todos los posibles de su zona)
+                    // y su disponibilidad en la fecha seleccionada
                     for (var i = 0; i < barbersAvailability.length; i++) {
                         var barber = barbersAvailability[i];
                         var servicesDuration = this.services.estimatedDuration + barber.tripAverageTimeMin;
                         // Si la fecha es igual al dia de hoy entonces la cita se puede hacer unicamente despues de tres horas
-                        // de hoy
-                        const from = selectedDate.isSame(dayjs()) ? dayjs().add(3, 'hour') : dayjs(barber.barber_schedules[0].fromHour, 'HH:mm:ss');
-                        const to = dayjs(barber.barber_schedules[0].toHour, 'HH:mm:ss');
-                        const minTimeAppointment = 30;
+                        // de hoy                        
+                        const from = selectedDate.isSame(dayjs()) ? dayjs().add(minHours, 'hour') : dayjs(barber.barber_schedules[0].fromHour, 'HH:mm:ss');
+                        const to = dayjs(barber.barber_schedules[0].toHour, 'HH:mm:ss');                        
                         var t = from;                        
-                        const endAppointment = t.add(servicesDuration, 'minute');
-                        while(t.isBefore(to)) {
-                            var available = true;                                                                                    
-                            const startAppointment = t;
+                        // Voy a recorrer de la hora de entrada del barbero a su hora de salida
+                        // y si hay un horario ocupado entonces no lo voy agregar a la lista de horas disponibles
+                        while (t.isBefore(to)) {
+                            var available = true;
+                            const startAppointment = t;                            
+                            const endAppointment = startAppointment.add(servicesDuration, 'minute');
                             for (var a = 0; a < barber.appointments.length; a++) {
                                 const appointment = barber.appointments[a];
                                 const init = dayjs(appointment.estimatedInit, 'HH:mm:ss');
                                 const end = dayjs(appointment.estimatedEnd, 'HH:mm:ss');
-                                if ((endAppointment.isBefore(init) || endAppointment.isSame(init)) || (startAppointment.isAfter(end) || startAppointment.isSame(end))) {
-                                    //available = true;
-                                } else {
-                                    available = false;                                    
+                                // Si la posible cita se encuentra dentro del rango de una cita ya agendada para el barbero
+                                // entonces la proxima posible cita empezara al final de la cita programada del barbero
+                                if (!((endAppointment.isBefore(init) || endAppointment.isSame(init)) 
+                                        || (startAppointment.isAfter(end) || startAppointment.isSame(end)))) {                                                                    
+                                    available = false;
+                                    t = end;  
+                                    break;      
                                 }
                             }
                             if (available) {
@@ -185,10 +189,10 @@ export default {
                                     };
                                 }
                                 hours[tFormatted].barbers.push(this.getSimpleBarber(barber));
-                            }
-                            t = t.add(minTimeAppointment, 'minute');
+                                t = t.add(minTimeAppointment, 'minute');
+                            }                            
                         }
-                        this.hours = hours;                        
+                        this.hours = hours;
                     }
                 })
                 .catch(e => this.errors = ["There was an reading availability.", e])
@@ -257,6 +261,20 @@ export default {
         hourSelected(newValue) {
             console.log(Object.keys(this.hours)[newValue]);
             //this.selectedHour = this.hours[Object.keys(this.hours)[newValue]];
+        },
+        clientAddressId(newValue) {
+            console.log(this.services);
+            console.log(newValue);
+            axios.post(api.base + "/appointments/barbers/byZone", { clientAddressId: newValue })
+                .then(response => {
+                    console.log(response);
+                    let anyBarber = [{
+                        id: -1,
+                        name: "Any"
+                    }];
+                    this.barbers = anyBarber.concat(response.data);
+                })
+                .catch(e => this.errors.push(e.message))
         }
 
     }

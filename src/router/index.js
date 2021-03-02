@@ -20,7 +20,15 @@ const routes = [
   },
   {
     path: '/appointment',
-    name: 'Appointment',
+    name: 'AppointmentSteps',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "about" */ '../views/appointments/AppointmentSteps.vue')
+  },
+  {
+    path: '/appointmentInfo',
+    name: 'AppointmentInfo',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -29,6 +37,7 @@ const routes = [
   {
     path: '/appointmentAddress/:idClient',
     name: 'AppointmentAddress',
+    props: true,
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
@@ -44,8 +53,8 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/appointments/AppointmentAvailability.vue')
   },
   {
-    path: '/appointmentServices/:clientAddressId',
-    name: 'AppointmentServices',
+    path: '/appointmentServices',
+    name: 'AppointmentServices',    
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.

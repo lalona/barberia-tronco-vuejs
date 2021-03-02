@@ -69,9 +69,14 @@ export default {
         })
         .then(response => {
           this.info = response;
-          this.$router.push({ name: 'AppointmentAddress', params: { idClient: response.id } })
+          console.log(response);
+          //this.$router.push({ name: 'AppointmentAddress', params: { idClient: response.id } })
+          this.$emit('appointment-address', response.data.id, response.data.phonenumberConfirmed)
         })
-        .catch(e => this.errors = ["There was an error registering information.", e])
+        .catch(e => {
+          console.log(e.response.data);
+          this.errors = ["There was an error registering information.", e.response.data.message]
+        })
     },
   },
   // components: {
