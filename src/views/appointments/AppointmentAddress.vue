@@ -25,13 +25,12 @@
                     <Places v-on:on-place-selected="placeSelected">
                     </Places>
                     <br>
-                    <v-btn class="mr-4" type="submit" :disabled="!valid">
-                        Next
-                    </v-btn>
                     <v-btn class="mr-4" type="submit" v-on:click="$emit('back')">
                         Back
                     </v-btn>
-
+                    <v-btn class="mr-4" type="submit" :disabled="!valid">
+                        Next
+                    </v-btn>                    
                 </v-container>
                 <p>
                     <label for="name">{{placeDetails.formatted_address}}</label>
@@ -109,7 +108,7 @@ export default {
                     //this.$router.push({ name: 'AppointmentServices', params: { clientAddressId: response.id } });
                     this.$emit('next', response.data.id);
                 })
-                .catch(e => this.errors = ["There was an error registering address.", e])
+                .catch(e => this.errors = ["There was an error registering address.", e.response.data.message])
         },
         selectClientAddress: function(clientAddressId) {
             this.$emit('next', clientAddressId);            
@@ -159,7 +158,8 @@ export default {
                         console.log(response);
                         this.clientAddresses = response.data.addresses;
                     })
-                    .catch(e => this.errors = ["There was an error getting addresses.", e]);
+                    .catch(e => this.errors = ["There was an error getting addresses.", e.response.data.message]);                
+                
             }
         }
     },

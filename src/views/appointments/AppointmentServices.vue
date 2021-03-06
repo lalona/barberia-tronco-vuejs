@@ -32,23 +32,18 @@
                         </div>
                     </div>
                 </v-list-item-group>
-            </v-list>
-
+            </v-list>            
+            <v-btn class="ma-2" v-on:click="$emit('back')" :disabled="!valid">
+                Back
+            </v-btn>            
             <v-btn class="ma-2" v-on:click="submit" :disabled="!valid">
                 Next
             </v-btn>
-
-            <v-btn class="ma-2" v-on:click="$emit('back')" :disabled="!valid">
-                Back
-            </v-btn>
-            <!-- <v-btn class="ma-2" outlined color="indigo" v-on:click="submit">
-                            Next
-                        </v-btn>             -->
         </v-card>
     </div>
 </template>
-<script>
 
+<script>
 //import Appointment from '../../models/appointments/appointment.model.js'
 import axios from "axios";
 //import Places from '../../components/Inputs/Places.vue';
@@ -77,7 +72,7 @@ export default {
                     return s;
                 });
             })
-            .catch(e => this.errors = ["There was an error getting services.", e])
+            .catch(e => this.errors = ["There was an error getting services.", e.response.data.message])
     },
     methods: {
         selectService: function(service) {

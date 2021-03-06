@@ -23,20 +23,19 @@
                 </p>
                 <v-container>
                     <v-card-text>
-                        <v-chip-group v-model="hourSelected" active-class="deep-purple accent-4 white--text" column>
-                            <v-chip v-for="hour in Object.keys(hours)" :key="hour">{{hour}}</v-chip>
+                        <v-chip-group active-class="deep-purple accent-4 white--text" column>
+                            <v-chip v-for="hour in Object.keys(hours)" :key="hour" v-on:click="hourSelected = hour">{{hour}}</v-chip>
                         </v-chip-group>
                     </v-card-text>
                     <v-card-text v-if="Object.keys(hours).length == 0">
                         No available dates.
                     </v-card-text>
-
-                    <v-btn class="mr-4" type="submit" :disabled="!valid">
-                        Confirm
-                    </v-btn>
                     <v-btn class="mr-4" type="submit" v-on:click="$emit('back')">
                         Back
                     </v-btn>
+                    <v-btn class="mr-4" type="submit" :disabled="!valid">
+                        Next
+                    </v-btn>                    
                 </v-container>
 
             </v-form>
@@ -91,7 +90,7 @@ export default {
     methods: {
         submit: function() {
             this.errors = [];
-            var hoursData = this.hours[Object.keys(this.hours)[this.hourSelected]];
+            var hoursData = this.hours[this.hourSelected];
             const appointmentDetails = {
                 clientAddressId: this.clientAddressId,
                 date: this.selectedDate.format('YYYY-MM-DD'),
@@ -110,7 +109,7 @@ export default {
                 })
                 .catch(e => {
                     console.log(e);
-                    this.errors = [e]
+                    this.errors = [e.response.data.message]
                 })
         },
         checkIfContainsBarber: function(barbers, barberId) {
@@ -158,7 +157,8 @@ export default {
                         // de hoy                        
                         const from = selectedDate.isSame(dayjs()) ? dayjs().add(minHours, 'hour') : dayjs(barber.barber_schedules[0].fromHour, 'HH:mm:ss');
                         const to = dayjs(barber.barber_schedules[0].toHour, 'HH:mm:ss');                        
-                        var t = from;                        
+                        var t = from;            
+                                                
                         // Voy a recorrer de la hora de entrada del barbero a su hora de salida
                         // y si hay un horario ocupado entonces no lo voy agregar a la lista de horas disponibles
                         while (t.isBefore(to)) {
@@ -173,8 +173,8 @@ export default {
                                 // entonces la proxima posible cita empezara al final de la cita programada del barbero
                                 if (!((endAppointment.isBefore(init) || endAppointment.isSame(init)) 
                                         || (startAppointment.isAfter(end) || startAppointment.isSame(end)))) {                                                                    
-                                    available = false;
-                                    t = end;  
+                                    available = false;                                
+                                    t = end;
                                     break;      
                                 }
                             }
@@ -188,14 +188,24 @@ export default {
                                         estimatedEnd: endAppointment.format('HH:mm')
                                     };
                                 }
-                                hours[tFormatted].barbers.push(this.getSimpleBarber(barber));
-                                t = t.add(minTimeAppointment, 'minute');
+                                hours[tFormatted].barbers.push(this.getSimpleBarber(barber));                                             
+                                // La compensacion funciona en casos en los casos en que hay horas ocupadas y cómo habia una hora
+                                // ocupada se puso un horario al finalizar la cita por ejemplo 9:10 en ese caso
+                                // la siguiente posible cita debe empezar 9:30 sin embargo como la posible cita anterior empieza 9:10
+                                // se pondria a las 9:40, para eliminar esos 10 minutos extra hay que hacer la compensacion
+                                // tambien se puede dar el caso que la posible cita despues de una cita ocupada empiece 9:40, entonces
+                                // la siguiente posible cita deberia sugerir 10:00
+                                var compensation = t.minute() == 0 ? 0 : (t.minute() < minTimeAppointment ? t.minute() : t.minute() - minTimeAppointment);
+                                //var compensation = 0;
+                                console.log(compensation);
+                                t = t.add(minTimeAppointment - compensation, 'minute');                                                                                                     
                             }                            
                         }
                         this.hours = hours;
+                        this.hourSelected = '';
                     }
                 })
-                .catch(e => this.errors = ["There was an reading availability.", e])
+                .catch(e => this.errors = ["There was an reading availability.", e.response.data.message])
         },
         barber(selectedBarberId) {
             console.log(selectedBarberId);
@@ -259,7 +269,7 @@ export default {
                 .catch(e => this.errors.push(e))
         },
         hourSelected(newValue) {
-            console.log(Object.keys(this.hours)[newValue]);
+            console.log(newValue);
             //this.selectedHour = this.hours[Object.keys(this.hours)[newValue]];
         },
         clientAddressId(newValue) {

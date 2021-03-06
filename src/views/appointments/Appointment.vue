@@ -10,15 +10,15 @@
         </p>
         <v-container>
           <v-row>
-            <v-col cols="12" md="4">
+            <v-col cols="12" md="4" sm="12" xs="12">
               <v-text-field v-model="firstname" :counter="30" label="First name" required outlined></v-text-field>
             </v-col>
 
-            <v-col cols="12" md="4">
+            <v-col cols="12" md="4" sm="12" xs="12">
               <v-text-field v-model="lastname" :counter="30" label="Last name" required outlined></v-text-field>
             </v-col>
 
-            <v-col cols="12" md="4">
+            <v-col cols="12" md="4" sm="12" xs="12">
               <v-text-field v-model="phonenumber" :rules="phoneRules" label="Phone number (only numbers)" required outlined></v-text-field>
             </v-col>
           </v-row>
@@ -30,8 +30,8 @@
     </v-card>
   </div>
 </template>
-<script>
 
+<script>
 //import Appointment from '../../models/appointments/appointment.model.js'
 import axios from "axios";
 //import Places from '../../components/Inputs/Places.vue';
@@ -39,7 +39,7 @@ import api from '../../config/api.config.js'
 
 export default {
   name: 'Appointment',
-  data: function() {
+  data: function() {    
     return {
       valid: false,
       errors: [],
@@ -56,16 +56,13 @@ export default {
   },
   methods: {
     submit: function() {
-
       this.errors = [];
-
-
       axios
         .post(api.base + '/appointments/clients/register', {
           name: this.firstname,
           lastname: this.lastname,
           phonenumber: this.phonenumber,
-          phonenumberCountry: "us"
+          phonenumberCountry: "mx"
         })
         .then(response => {
           this.info = response;
