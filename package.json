@@ -5,6 +5,7 @@
   "scripts": {
     "build": "vue-cli-service build --dest _static",
     "lint": "vue-cli-service lint",
+    "serve": "vue-cli-service serve",
     "start": "node sammy.js; serve -s _static -l tcp://0.0.0.0:${PORT:-8080} -n"
   },
   "dependencies": {

@@ -1,13 +1,13 @@
 <template>
     <div>
         <br>
-        <v-card class="mx-auto" max-width="700">
+        <!-- <v-card class="mx-auto" max-width="700"> -->
             <v-list dense v-if="phonenumberConfirmed">                
                 <v-list-item-group v-model="selectedItem" color="primary">
                     <v-list-item v-for="(address, i) in clientAddresses" :key="i" v-on:click="selectClientAddress(address.id)">
-                        <v-list-item-icon>
+                        <!-- <v-list-item-icon>
                             <v-icon large>mdi-map-marker-outline</v-icon>
-                        </v-list-item-icon>
+                        </v-list-item-icon> -->
                         <v-list-item-content>
                             <v-list-item-title v-text="address.formattedAddress"></v-list-item-title>
                         </v-list-item-content>
@@ -36,7 +36,7 @@
                     <label for="name">{{placeDetails.formatted_address}}</label>
                 </p>
             </v-form>
-        </v-card>
+        <!-- </v-card> -->
         <!-- <form id="app" @submit="checkForm" action="https://vuejs.org/" method="post">
                                   
 
@@ -81,7 +81,7 @@ export default {
             placeDetails: {
                 formattedAddress: ""
             },
-            clientAddresses: []
+            clientAddresses: [],            
             //idClient: this.$router.params.idClient
         };
     },
@@ -158,7 +158,7 @@ export default {
                         console.log(response);
                         this.clientAddresses = response.data.addresses;
                     })
-                    .catch(e => this.errors = ["There was an error getting addresses.", e.response.data.message]);                
+                    .catch(e => this.errors = [e.response.data.message]);                
                 
             }
         }

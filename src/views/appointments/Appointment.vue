@@ -1,7 +1,7 @@
 <template>
   <div>
     <br>
-    <v-card class="mx-auto" max-width="1000">
+    <!-- <v-card class="mx-auto" max-width="1000"> -->
       <v-form v-model="valid" @submit.prevent="submit">
         <p v-if="errors.length">
           <v-alert dense outlined type="error" v-for="error in errors" :key="error">
@@ -27,7 +27,7 @@
           </v-btn>
         </v-container>
       </v-form>
-    </v-card>
+    <!-- </v-card> -->
   </div>
 </template>
 
@@ -72,7 +72,7 @@ export default {
         })
         .catch(e => {
           console.log(e.response.data);
-          this.errors = ["There was an error registering information.", e.response.data.message]
+          this.errors = [e.response.data.message]
         })
     },
   },

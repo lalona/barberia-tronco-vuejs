@@ -9,7 +9,7 @@
                 </v-col>
             </v-row>
 
-            <v-row justify="center" class="ma-2">
+            <v-row justify="center" class="ma-2" v-if="!hideCalendar">
                 <v-date-picker v-model="picker" :allowed-dates="ad" full-width></v-date-picker>
             </v-row>
 
@@ -73,7 +73,8 @@ export default {
             barberIds: [],
             allowedDates: [],
             dateBarbers: {},
-            daysOfWeekBarbers: {}
+            daysOfWeekBarbers: {},
+            hideCalendar: false
         };
     },
     props: {
@@ -283,8 +284,12 @@ export default {
                         name: "Any"
                     }];
                     this.barbers = anyBarber.concat(response.data);
+                    this.hideCalendar = false;
                 })
-                .catch(e => this.errors.push(e.message))
+                .catch(e => {
+                    this.hideCalendar = true;
+                    this.errors.push(e.response.data.message)
+                })
         }
 
     }

@@ -4,7 +4,7 @@
         <v-card class="mx-auto" max-width="400">
             <v-list flat subheader three-line>
                 <v-subheader>General</v-subheader>
-                <v-list-item-group v-model="settings" multiple active-class="">
+                <v-list-item-group multiple active-class="">
                     <div v-for="service in services" :key="service.id">
                         <v-list-item v-on:click="service=selectService(service)">
                             <template v-slot:default="{ active }">
@@ -33,7 +33,7 @@
                     </div>
                 </v-list-item-group>
             </v-list>            
-            <v-btn class="ma-2" v-on:click="$emit('back')" :disabled="!valid">
+            <v-btn class="ma-2" v-on:click="$emit('back')">
                 Back
             </v-btn>            
             <v-btn class="ma-2" v-on:click="submit" :disabled="!valid">
@@ -95,7 +95,7 @@ export default {
             for (var k = 0; k < Object.keys(this.servicesSelected).length; k++) {
                 var key = Object.keys(this.servicesSelected)[k];
                 var service = this.servicesSelected[key];
-                estimatedDuration += service.estimatedDurationMin;
+                estimatedDuration += service.estimatedDurationMin * service.selectedCount;
                 services.push(service);
             }
             // this.$router.push({

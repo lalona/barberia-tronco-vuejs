@@ -2,7 +2,7 @@
     <div>
         <br>
         <v-card class="mx-auto" max-width="1000">
-            <v-card-text>
+            <v-card-text v-if="Object.keys(details).length > 0">
 
                 <div class="my-4 subtitle-1">
                     Date: {{ details.date }}
@@ -24,7 +24,7 @@
                     Services
                 </div>
                 <div class="my-4 subtitle-2" v-for="s in services" :key="s.id">
-                    {{ s.quantity }} - {{ s.service.name }} ({{s.service.price}} unit price)
+                    {{ s.name }} ({{s.price}} unit price) x {{ s.appointments_services.quantity }}
                 </div>
 
             </v-card-text>
@@ -115,7 +115,7 @@ export default {
                     this.info = response;
                     console.log(response);
                     this.details = response.data.details;
-                    this.services = response.data.services;
+                    this.services = response.data.details.services;
                     this.phonenumberConfirmed = this.details.client.phonenumberConfirmed;
                     if(this.phonenumberConfimred) {
                         this.pin = "0000";
