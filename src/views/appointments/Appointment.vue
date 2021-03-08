@@ -62,7 +62,7 @@ export default {
           name: this.firstname,
           lastname: this.lastname,
           phonenumber: this.phonenumber,
-          phonenumberCountry: "mx"
+          phonenumberCountry: "us"
         })
         .then(response => {
           this.info = response;
